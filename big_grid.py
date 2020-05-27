@@ -1,5 +1,7 @@
+import time
 from small_grid import *
 import numpy as np
+from merge_sort import *
 
 class BigGrid():
 	def __init__ (self):
@@ -36,18 +38,22 @@ class BigGrid():
 
 	def get_playable_positions(self,lastMoveX=None, lastMoveY=None):
 		return_list=[]
+		
 		if lastMoveX==None:
-			for grid_x in range(3):
-				for grid_y in range(3):
-					for x in range(3):
-						for y in range(3):
-							return_list.append((grid_x, grid_y, x, y))
+			grid_indices=[(1,1),(0,0),(0,2),(2,2),(2,0),(1,0),(0,1),(2,1),(1,2)]
+			for (grid_x, grid_y) in grid_indices :
+				for x,y in self.smallGrids[grid_x][grid_y].playable_positions():
+					return_list.append((grid_x, grid_y, x, y))
 			return return_list
 		if self.localWinners[lastMoveX, lastMoveY]==0:
 			for x,y in self.smallGrids[lastMoveX][lastMoveY].playable_positions():
 				return_list.append((lastMoveX, lastMoveY, x, y))
 			return return_list
-		for (grid_x, grid_y) in [(1,1),(0,0),(0,2),(2,2),(2,0),(1,0),(0,1),(2,1),(1,2)] :
+		arr=self.localEvaluations.tolist()
+		arr=arr[0]+arr[1]+arr[2]
+		grid_indices=[(1,1),(0,0),(0,2),(2,2),(2,0),(1,0),(0,1),(2,1),(1,2)]
+		grid_indices=mergeSort(arr, grid_indices, 0, 8)
+		for (grid_x, grid_y) in grid_indices:
 			if self.localWinners[grid_x, grid_y]==0:
 				for x,y in self.smallGrids[grid_x][grid_y].playable_positions():
 					return_list.append((grid_x, grid_y, x, y))
@@ -91,6 +97,8 @@ def bMinimax(biggrid, alpha=-10000, beta=+10000, maximizing=True, depth=3, lastM
 	if not biggrid.winner==0:
 		return biggrid.winner*625, None
 	moves_list=biggrid.get_playable_positions(lastMoveX, lastMoveY)
+	if maximizing:
+		moves_list=moves_list[::-1]
 	if len(moves_list)==0 or depth==0:
 		return biggrid.fullEvaluate(), None
 	best_move=(0,0,0,0)
@@ -98,7 +106,6 @@ def bMinimax(biggrid, alpha=-10000, beta=+10000, maximizing=True, depth=3, lastM
 		bestval=-10000
 		for tup in moves_list:
 			(grid_x, grid_y, x, y)=tup
-			print(tup)
 			biggrid.play(1,grid_x,grid_y,x,y)
 			currentval,current_move=bMinimax(biggrid, alpha, beta, False, depth-1, x, y)
 			biggrid.play(0,grid_x,grid_y,x,y)
@@ -113,7 +120,6 @@ def bMinimax(biggrid, alpha=-10000, beta=+10000, maximizing=True, depth=3, lastM
 		bestval=10000
 		for tup in moves_list:
 			(grid_x, grid_y, x, y)=tup
-			print(tup)
 			biggrid.play(-1,grid_x,grid_y,x,y)
 			currentval, current_move=bMinimax(biggrid, alpha, beta, True, depth-1, x, y)
 			biggrid.play(0,grid_x,grid_y,x,y)
@@ -125,18 +131,25 @@ def bMinimax(biggrid, alpha=-10000, beta=+10000, maximizing=True, depth=3, lastM
 				break
 		return bestval, best_move	#- depth + 9 to val, for faster wins
 
+
+def optimalDepth(i):
+	temp_list=[0,1,2,2,3,4]
+	return 4+temp_list[i//10]
+
 bg=BigGrid()
 flag=True
 move=(0,1,None, None)
-# for i in range(81):
-# 	val, move =bMinimax(bg, maximizing=flag, depth=4+(i//10), lastMoveX=move[-2], lastMoveY=move[-1])
-# 	if move==None:
-# 		print("winner: ", bg.winner)
-# 		break
-# 	print(i, val, move, flag)
-# 	if flag:
-# 		bg.play(1,move[0], move[1], move[2], move[3])
-# 	else:
-# 		move = [int(x) for x in input("Enter move: ").split()]
-# 		bg.play(-1,move[0], move[1], move[2], move[3])
-# 	flag= not flag
+for i in range(81):
+	start_time = time.time()
+	val, move =bMinimax(bg, maximizing=flag, depth=optimalDepth(i), lastMoveX=move[-2], lastMoveY=move[-1])
+	print(time.time()-start_time)
+	if move==None:
+		print("winner: ", bg.winner)
+		break
+	print(i, val, move, flag)
+	if flag:
+		bg.play(1,move[0], move[1], move[2], move[3])
+	else:
+		#move = [int(x) for x in input("Enter move: ").split()]
+		bg.play(-1,move[0], move[1], move[2], move[3])
+	flag= not flag
