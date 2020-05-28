@@ -133,23 +133,23 @@ def bMinimax(biggrid, alpha=-10000, beta=+10000, maximizing=True, depth=3, lastM
 
 
 def optimalDepth(i):
-	temp_list=[0,1,2,2,3,4]
+	temp_list=[0,1,2,2,3,4,3,2]
 	return 4+temp_list[i//10]
 
-bg=BigGrid()
-flag=True
-move=(0,1,None, None)
-for i in range(81):
-	start_time = time.time()
-	val, move =bMinimax(bg, maximizing=flag, depth=optimalDepth(i), lastMoveX=move[-2], lastMoveY=move[-1])
-	print(time.time()-start_time)
-	if move==None:
-		print("winner: ", bg.winner)
-		break
-	print(i, val, move, flag)
-	if flag:
-		bg.play(1,move[0], move[1], move[2], move[3])
-	else:
-		#move = [int(x) for x in input("Enter move: ").split()]
-		bg.play(-1,move[0], move[1], move[2], move[3])
-	flag= not flag
+# bg=BigGrid()
+# flag=True
+# move=(0,1,None, None)
+# for i in range(81):
+# 	start_time = time.time()
+# 	val, move =bMinimax(bg, maximizing=flag, depth=optimalDepth(i), lastMoveX=move[-2], lastMoveY=move[-1])
+# 	print(time.time()-start_time)
+# 	if move==None:
+# 		print("winner: ", bg.winner)
+# 		break
+# 	print(i, val, move, flag)
+# 	if flag:
+# 		bg.play(1,move[0], move[1], move[2], move[3])
+# 	else:
+# 		#move = [int(x) for x in input("Enter move: ").split()]
+# 		bg.play(-1,move[0], move[1], move[2], move[3])
+# 	flag= not flag
